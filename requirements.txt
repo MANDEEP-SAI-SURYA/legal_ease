@@ -14,3 +14,4 @@ torch
 
 groq
 google-genai
+gunicorn
