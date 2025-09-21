@@ -17,7 +17,6 @@ from utils.generate_deadlines import GenerateDeadlines
 from utils.generate_req_docs import Generate_Documents
 import glob
 from dotenv import load_dotenv
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.schema import Document
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
@@ -1090,6 +1089,7 @@ retriever = FAISS.load_local("faiss_index", embedding_model, allow_dangerous_des
 
 @app.route("/find_users/<query_id>", methods=["GET"])
 def answer_query(query_id):
+    from langchain_community.embeddings import HuggingFaceEmbeddings
     if "user" not in session:
         return redirect(url_for("login"))
 
