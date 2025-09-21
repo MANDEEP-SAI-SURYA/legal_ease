@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalEase - Find Lawyers</title>
+    <link rel="stylesheet" href="static/css/lawyer_page.css">
+    <link rel="stylesheet" href="static/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2 class="logo">LegalEase</h2>
+        <ul>
+            <li><a href="/dashboard" ><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+            <li><a href="/documents" ><i class="fas fa-file-alt"></i> <span>Documents</span></a></li>
+            <li><a href="/lawyers" class="active"><i class="fas fa-user-tie"></i> <span>Find Lawyers</span></a></li>
+            <li><a href="/chat-interface"><i class="fas fa-comments"></i> <span>Messages</span></a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header>
+            <h1>Find Specialized Lawyers</h1>
+            <div class="user-profile">
+                <span class="user-icon">UN</span>
+                <span class="username">{{ user.name }}</span>
+            </div>
+        </header>
+
+        <!-- Lawyer Listings -->
+        <section class="lawyer-section">
+            <h2>Available Lawyers</h2>
+            <div id="lawyer-list" class="lawyer-grid"></div>
+
+<!-- Popup Modal -->
+<div id="lawyer-modal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h2 id="lawyer-name"></h2>
+    <p><strong>Specialization:</strong> <span id="lawyer-specialization"></span></p>
+    <p><strong>Experience:</strong> <span id="lawyer-experience"></span> years</p>
+    <p><strong>Location:</strong> <span id="lawyer-location"></span></p>
+    <p><strong>Fee:</strong> ₹<span id="lawyer-fee"></span></p>
+    <p><strong>About:</strong> <span id="lawyer-bio"></span></p>
+    <h3>Previous Works:</h3>
+    <ul id="lawyer-works"></ul>
+    
+    <div class="modal-actions">
+        <a id="chat-btn" href="#" class="contact-btn chat-btn">
+            <i class="fas fa-comments"></i> Chat with Lawyer
+        </a>
+        <button id="hire-btn" class="contact-btn hire-btn">
+            <i class="fas fa-handshake"></i> Hire Lawyer
+        </button>
+    </div>
+  </div>
+</div>
+        </section>
+    </div>
+
+    <script src="static/js/lawyer_page.js"></script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Similar Legal Queries</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #2f4050;
+      --primary-dark: #283848;
+      --accent: #3b82f6;
+      --accent-dark: #2563eb;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --light: #f9fafc;
+      --gray-light: #eaeaea;
+      --gray: #d1d5db;
+      --text: #333;
+      --text-light: #6b7280;
+      --white: #ffffff;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--light);
+      color: var(--text);
+      line-height: 1.6;
+      /* padding: 20px; */
+      min-height: 100vh;
+    }
+
+    .main-container {
+      /* max-width: 1200px; */
+      margin: 0 auto;
+      background: var(--white);
+      /* border-radius: 12px; */
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .page-header {
+      background: linear-gradient(to right, var(--primary), var(--primary-dark));
+      color: var(--white);
+      padding: 25px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 500;
+    }
+
+    .avatar {
+      background: var(--accent);
+      color: var(--white);
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .content-section {
+      padding: 30px;
+    }
+
+    .section-title {
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--gray-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-query-section {
+      background: var(--light);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-left: 4px solid var(--accent);
+      box-shadow: var(--shadow);
+    }
+
+    .user-query-label {
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-query-text {
+      background: var(--white);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--gray-light);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .results-count {
+      font-weight: 600;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .query-card {
+      background: var(--white);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      border-left: 4px solid var(--accent);
+      height: 100%;
+    }
+
+    .query-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .query-category {
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 4px;
+    }
+
+    .query-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .query-details {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .query-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-light);
+      padding-top: 15px;
+      border-top: 1px solid var(--gray-light);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 50px 30px;
+      color: var(--text-light);
+    }
+
+    .no-results i {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      color: var(--gray);
+    }
+
+    .no-results h4 {
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+      gap: 15px;
+    }
+
+    .back-btn {
+      background: var(--accent);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 25px;
+      font-weight: 500;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+    }
+
+    .back-btn:hover {
+      background: var(--accent-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(59, 130, 246, 0.4);
+      color: var(--white);
+    }
+
+    .new-search-btn {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 25px;
+      font-weight: 500;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 6px rgba(47, 64, 80, 0.3);
+    }
+
+    .new-search-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(47, 64, 80, 0.4);
+      color: var(--white);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+      }
+      
+      .content-section {
+        padding: 20px;
+      }
+      
+      .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .back-btn, .new-search-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .Download_user_file{
+      background: var(--accent);
+    color: var(--white);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <header class="page-header">
+      <div class="page-title">
+        <i class="fas fa-scale-balanced"></i>
+        <h1>Similar Legal Queries</h1>
+      </div>
+      <div class="user-info">
+        <div class="avatar">JD</div>
+        <span>John Doe</span>
+      </div>
+    </header>
+
+    <main class="content-section">
+      {% if query %}
+      <div class="user-query-section">
+        <div class="user-query-label">
+          <i class="fas fa-question-circle"></i>
+          <span>Your Query:</span>
+        </div>
+        <div class="user-query-text">
+          <p><strong>{{ query }}</strong></p>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="results-header">
+        <div class="results-count">
+          <i class="fas fa-file-alt"></i>
+          <span>Found {{ users|length if users and users|length > 0 else 0 }} Similar Queries</span>
+        </div>
+      </div>
+
+      {% if users and users|length > 0 %}
+        <div class="row">
+          {% for item in users %}
+          <div class="col-md-6 col-lg-4 mb-4">
+            <div class="query-card">
+              <div class="query-category">Legal Query</div>
+              <h5 class="query-title">{{ item.name }}</h5>
+              <p class="query-details">
+                <strong>Query:</strong> {{ item.Query }} <br>
+                <strong>Advocate:</strong> {{ item.advocate }} <br>
+                <strong>Resolved:</strong> {{ item.state_of_resolvation }} <br>
+                <strong>How Resolved:</strong> {{ item.how_it_got_resolved }}
+              </p>
+              <div class="query-meta">
+                <span>
+                  <button class="Download_user_file" data-id="{{ item.OID }}">Download File</button>
+                </span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="no-results">
+          <i class="fas fa-search"></i>
+          <h4>No Similar Queries Found</h4>
+          <p>We couldn't find any similar legal queries for your request at this time.</p>
+        </div>
+      {% endif %}
+
+      <div class="action-buttons">
+        <a href="{{ url_for('user_dashboard') }}" class="back-btn">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <a href="#" class="new-search-btn">
+          <i class="fas fa-search"></i> New Search
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

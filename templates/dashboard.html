@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalEase - Dashboard</title>
+    <link rel="stylesheet" href="static/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <h2 class="logo">LegalEase</h2>
+        </div>
+        <ul>
+            <li><a href="/dashboard" class="active"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+            <li><a href="/documents"><i class="fas fa-file-alt"></i> <span>Documents</span></a></li>
+            <li><a href="/lawyers"><i class="fas fa-user-tie"></i> <span>Find Lawyers</span></a></li>
+            <li><a href="/chat-interface"><i class="fas fa-comments"></i> <span>Messages</span></a></li>
+
+        </ul>
+        <div class="sidebar-footer">
+            <p>&copy; 2025 LegalEase</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="main-content">
+        <header>
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Dashboard</h1>
+            </div>
+            <div class="user-info">
+                <span>{{ user.name }}</span>
+                <div class="avatar">{{ user.initials }}</div>
+            </div>
+        </header>
+
+        <!-- Progress -->
+        <section class="case-progress">
+            <div class="section-header">
+                <h3>Your Case Progress</h3>
+                <div class="progress-indicator">
+                    <span>Updated just now</span>
+                </div>
+            </div>
+            <div class="progress-box">
+                <div class="circle-progress-container">
+                    <div class="circle-progress" data-progress="{{ progress }}">
+                        <span id="progress-percent">{{ progress }}%</span>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <strong>{{ completed_tasks }}</strong>
+                        <span>Completed Tasks</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>{{ pending_tasks }}</strong>
+                        <span>Pending Tasks</span>
+                    </div>
+                    
+                </div>
+                <button class="refresh-btn" onclick="refreshProgress()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </section>
+
+    
+        <!-- Deadlines (per selected query) + Manual deadlines -->
+        <section class="deadlines">
+            <div class="section-header">
+                <h3>Upcoming Deadlines</h3>
+                <div class="section-actions" style="display:flex;gap:.5rem;align-items:center;">
+                    <select id="deadlineQuerySelect">
+                        {% if saved_queries %}
+                            {% for q in saved_queries %}
+                                <option value="{{ q.id }}">{{ q.text }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="" disabled selected>No queries yet</option>
+                        {% endif %}
+                    </select>
+                    <button class="generate_deadlines" id="generateDeadlinesBtn" onclick="handleGenerateDeadlines()"
+                        {% if not saved_queries %}disabled{% endif %}>
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Deadlines
+                    </button>
+                    <button class="add-btn" onclick="addDeadline()">
+                        <i class="fas fa-plus"></i> Add Deadline
+                    </button>
+                </div>
+            </div>
+
+<!-- AI-generated deadlines for the selected query -->
+<div class="generated-deadlines">
+    <h4>AI-Generated Deadlines (for selected query)</h4>
+    <ul id="query-deadlines-list">
+        {% if saved_queries and saved_queries[0].deadlines %}
+            {% for dl in saved_queries[0].deadlines %}
+                {% if dl.task and dl.due_date %}
+                    <li>
+                        <div class="deadline-content">
+                            <label class="checkbox-container">
+                                <input type="checkbox"
+                                       {% if dl.completed %}checked{% endif %}
+                                       onchange="toggleAiDeadline('{{ saved_queries[0].id }}', '{{ dl.id }}', this.checked)">
+                                <span class="checkmark"></span>
+                            </label>
+                            <div class="deadline-info">
+                                <span class="deadline-title">{{ dl.task }}</span>
+                                <span class="deadline-date">Due: {{ dl.due_date }}</span>
+                            </div>
+                        </div>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <li>No AI-generated deadlines yet. Click "Generate Deadlines".</li>
+        {% endif %}
+    </ul>
+</div>
+
+            <!--  manual deadlines  -->
+            <div class="manual-deadlines" style="margin-top:1rem;">
+                <h4>Your Manual Deadlines</h4>
+                <ul id="deadline-list">
+                    {% for deadline in deadlines %}
+                    <li data-id="{{ deadline.id }}">
+                        <div class="deadline-content">
+                            <label class="checkbox-container">
+                                <input type="checkbox" {% if deadline.completed %}checked{% endif %}
+                                    onchange="toggleDeadline('{{ deadline.id }}', this.checked)">
+                                <span class="checkmark"></span>
+                            </label>
+                            <div class="deadline-info">
+                                <span class="deadline-title">{{ deadline.title }}</span>
+                                <span class="deadline-date">{{ deadline.date }}</span>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="icon-btn edit-btn" onclick="editDeadline('{{ deadline.id }}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="icon-btn delete-btn" onclick="deleteDeadline('{{ deadline.id }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li>No manual deadlines yet. Add one using the “Add Deadline” button.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <!-- Query Section -->
+        <section class="query-section">
+            <div class="section-header">
+                <h3>Case Query Management</h3>
+                <button class="add-btn" id="newQueryBtn">
+                    <i class="fas fa-plus"></i> New Query
+                </button>
+            </div>
+            
+            <!-- Query Input Form -->
+            <div class="query-input-container" id="queryInputContainer">
+                <div class="query-header">
+                    <h4>Create New Query</h4>
+                    <button class="icon-btn close-btn" id="closeQueryBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <textarea id="userQuery" placeholder="Enter your legal query here..."></textarea>
+                <div class="query-actions">
+                    <button class="query-btn save-btn" onclick="saveQuery()">
+                        <i class="fas fa-save"></i> Save Query
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Saved Queries -->
+            <div class="saved-queries">
+                <h4>Saved Queries</h4>
+                <div class="queries-list" id="queriesList">
+                    {% for q in saved_queries %}
+                    <div class="query-card">
+                        <p><strong>{{ q.text }}</strong> ({{ q.date }})</p>
+                        {% if q.scan_status %}
+                        <div class="analysis">
+                            <p><strong>Status:</strong> {{ q.scan_status }}</p>
+                            <p><strong>Message:</strong> {{ q.scan_result }}</p>
+                            <button class="find_users" onclick="find_users('{{ q.id }}')">Find Users</button>
+                        </div>
+                        {% else %}
+                        <button onclick="scan_query('{{ q.text }}')">Analyze</button>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p>No queries yet. Create your first one with “New Query”.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Analysis Results -->
+            <div class="analysis-results" id="analysisResults">
+                <div class="analysis-header">
+                    <h4>Analysis Results</h4>
+                    <button class="icon-btn close-btn" onclick="closeAnalysis()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="analysis-content" id="analysisContent">
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Pass saved_queries to JS safely -->
+    <script id="saved-queries-data" type="application/json">
+        {{ saved_queries | tojson }}
+    </script>
+
+    <!-- Helpers to switch selected query content in the two cards -->
+    <script>
+        const savedQueries = (() => {
+            try {
+                const el = document.getElementById('saved-queries-data');
+                return el ? JSON.parse(el.textContent || '[]') : [];
+            } catch (e) {
+                return [];
+            }
+        })();
+
+        
+
+        function renderGeneratedDeadlines(queryId) {
+    const ul = document.getElementById('query-deadlines-list');
+    if (!ul) return;
+    ul.innerHTML = '';
+    
+    const q = savedQueries.find(x => x.id === queryId);
+    if (!q) {
+        ul.innerHTML = '<li>No query selected.</li>';
+        return;
+    }
+    
+    const dls = Array.isArray(q.deadlines) ? q.deadlines : [];
+    if (!dls.length) {
+        ul.innerHTML = '<li>No AI-generated deadlines yet. Click “Generate Deadlines”.</li>';
+        return;
+    }
+    
+    dls.forEach(d => {
+        if (d.task && d.due_date) {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${d.task}</strong><br>Due: ${d.due_date}`;
+            ul.appendChild(li);
+        }
+    });
+}
+
+
+        
+
+        function handleGenerateDeadlines() {
+            const select = document.getElementById('deadlineQuerySelect');
+            const id = select ? select.value : '';
+            if (!id) { showNotification('Please add a query first', 'warning'); return; }
+            generate_deadlines_ai(id);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dlSel = document.getElementById('deadlineQuerySelect');
+            if (dlSel && dlSel.value) renderGeneratedDeadlines(dlSel.value);
+            if (dlSel) dlSel.addEventListener('change', e => renderGeneratedDeadlines(e.target.value));
+        });
+    </script>
+
+    <script src="static/js/dashboard.js"></script>
+</body>
+</html>

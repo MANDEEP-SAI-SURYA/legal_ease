@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalEase - Documents</title>
+    <link rel="stylesheet" href="static/css/documents.css">
+    <link rel="stylesheet" href="static/css/dashboard.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .delete-btn{
+            color: white;
+        }
+        .doc-requirements {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .doc-requirements h4 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .required-elements {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .required-elements li {
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .required-elements li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+        .visual-reference {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 5px;
+        }
+        .scan-details {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .validity-valid { background-color: #d4edda; border-color: #c3e6cb; }
+        .validity-invalid { background-color: #f8d7da; border-color: #f5c6cb; }
+        .validity-questionable { background-color: #fff3cd; border-color: #ffeeba; }
+        .compliance-score {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .score-high { background-color: #d4edda; color: #155724; }
+        .score-medium { background-color: #fff3cd; color: #856404; }
+        .score-low { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <h2 class="logo">LegalEase</h2>
+        </div>
+        <ul>
+            <li><a href="/dashboard" ><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+            <li><a href="/documents" class="active"><i class="fas fa-file-alt"></i> <span>Documents</span></a></li>
+            <li><a href="/lawyers"><i class="fas fa-user-tie"></i> <span>Find Lawyers</span></a></li>
+            <li><a href="/chat-interface"><i class="fas fa-comments"></i> <span>Messages</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <p>&copy; 2025 LegalEase</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header>
+            <h1>Documents</h1>
+            <div class="user-info">
+                <span>{{ user.name }}</span>
+                <div class="avatar">{{ user.initials }}</div>
+                <div class="compliance-info">
+                    <small>Compliance Score: 
+                        <span class="compliance-score" id="userComplianceScore">{{ user.compliance_score or 'N/A' }}</span>
+                    </small>
+                </div>
+            </div>
+        </header>
+
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <h3>Add New Document</h3>
+            <div class="upload-box">
+                <input type="text" id="docName" placeholder="Enter document name">
+                <input type="file" id="docFile" accept="image/*,application/pdf">
+                <button onclick="uploadDocument()">Add Document</button>
+            </div>
+        </section>
+
+        <!-- Required Documents (per selected query) -->
+        <section class="required-docs">
+            <div class="section-header">
+                <h3>Required Documents</h3>
+                <div class="section-actions" style="display:flex;gap:.5rem;align-items:center;">
+                    <select id="docQuerySelect">
+                        {% if saved_queries %}
+                            {% for q in saved_queries %}
+                                <option value="{{ q.id }}">{{ q.text[:50] }}...</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="" disabled selected>No queries yet</option>
+                        {% endif %}
+                    </select>
+                    <button class="add-btn" id="generateDocsBtn" onclick="handleGenerateDocs()"
+                        {% if not saved_queries %}disabled{% endif %}>
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Get required Documents
+                    </button>
+                </div>
+            </div>
+            <div id="required-docs-container">
+                {% if saved_queries and saved_queries[0].documents %}
+                    {% for doc in saved_queries[0].documents %}
+                        <div class="doc-requirements">
+                            <h4>{{ doc.name if doc.name else doc }}</h4>
+                            {% if doc.required_elements %}
+                                <p><strong>Required Elements:</strong></p>
+                                <ul class="required-elements">
+                                    {% for element in doc.required_elements %}
+                                        <li>{{ element }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            {% if doc.visual_reference %}
+                                <div class="visual-reference">
+                                    <strong>Visual Reference:</strong>
+                                    <p><em>{{ doc.visual_reference.layout_description }}</em></p>
+                                    {% if doc.visual_reference.key_visual_features %}
+                                        <small>Key features: {{ ', '.join(doc.visual_reference.key_visual_features) }}</small>
+                                    {% endif %}
+                                    <button style="margin-top: 20px;" class="add-btn" onclick="handle_doc_reference()">See Reference</button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No required documents yet. Run "Analyze" on a query or click "Get required Documents".</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Uploaded Docs -->
+        <section class="uploaded-docs">
+            <h3>Your Uploaded Documents</h3>
+            <ul id="docList">
+                {% if uploaded_docs %}
+                    {% for doc in uploaded_docs %}
+                    <li id="doc-{{ doc.id }}" class="doc-item">
+                        <div class="doc-info">
+                            <i class="fas fa-file"></i>
+                            <span class="doc-name">{{ doc.name }}</span>
+                        </div>
+
+                        <!-- Enhanced scan info -->
+                        <div class="doc-status">
+                            <small>Status: <strong>{{ doc.scan_status }}</strong></small><br>
+                            {% if doc.scan_result and doc.scan_result.overall_validity %}
+                                <div class="scan-details validity-{{ doc.scan_result.overall_validity }}">
+                                    <strong>Validity: {{ doc.scan_result.overall_validity|title }}</strong>
+                                    {% if doc.scan_result.authenticity_score %}
+                                        <br><small>Authenticity Score: {{ doc.scan_result.authenticity_score }}%</small>
+                                    {% endif %}
+                                    {% if doc.scan_result.required_elements_check %}
+                                        <br><small>Elements Check: 
+                                            {% if doc.scan_result.required_elements_check.all_present %}
+                                                All Present ✓
+                                            {% else %}
+                                                Missing: {{ ', '.join(doc.scan_result.required_elements_check.missing_elements or []) }}
+                                            {% endif %}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <small>Result: {{ doc.scan_result if doc.scan_result else 'Not scanned yet' }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="doc-actions">
+                            <button class="scan-btn" onclick="scanDocument('{{ doc.id }}')">
+                                {% if doc.scan_status == 'completed' %}Re-scan{% else %}Scan{% endif %}
+                            </button>
+                            <button class="delete-btn" onclick="deleteDocument('{{ doc.id }}')">Delete</button>
+                        </div>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <p>No documents uploaded yet.</p>
+                {% endif %}
+            </ul>
+        </section>
+    </div>
+
+    <!-- Document Details Modal -->
+    <div id="documentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeDocumentModal()">&times;</span>
+            <div id="modalContent">
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/documents.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+flask
+python-dotenv
+requests
+pymupdf
+
+langchain
+langchain-community
+langchain-groq
+langchain-google-genai
+
+faiss-cpu
+sentence-transformers
+torch
+
+groq
+google-genai
