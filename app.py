@@ -1,7 +1,11 @@
-import os
-import json
+
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, url_for, flash, session, redirect
+app = Flask(__name__)
+app.secret_key = "supersecretkey123"
+
+import os
+import json
 from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime, timedelta
@@ -24,9 +28,6 @@ import re
 FAISS_INDEX_PATH = os.getenv("FAISS_INDEX_PATH", "faiss_index")
 # Load environment variables
 load_dotenv()
-
-app = Flask(__name__)
-app.secret_key = "supersecretkey123"
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://saivinil:bqTYHpEGZMPTXEdJ@soven-legal.u0ro4jx.mongodb.net/")
 client = MongoClient(
