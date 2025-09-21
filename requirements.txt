@@ -16,3 +16,5 @@ groq
 google-genai
 gunicorn
 pymongo
+Flask-Bcrypt
+Flask
