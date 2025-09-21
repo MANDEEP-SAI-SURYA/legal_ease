@@ -1082,14 +1082,15 @@ def chat_interface():
     return render_template("chat_interface.html", user=user)
 
 
-embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-vectorstore = FAISS.load_local("faiss_index", embedding_model, allow_dangerous_deserialization=True)
-retriever = FAISS.load_local("faiss_index", embedding_model, allow_dangerous_deserialization=True).as_retriever(search_kwargs={"k": 6})
+
 
 
 @app.route("/find_users/<query_id>", methods=["GET"])
 def answer_query(query_id):
     from langchain_community.embeddings import HuggingFaceEmbeddings
+    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    vectorstore = FAISS.load_local("faiss_index", embedding_model, allow_dangerous_deserialization=True)
+    retriever = FAISS.load_local("faiss_index", embedding_model, allow_dangerous_deserialization=True).as_retriever(search_kwargs={"k": 6})
     if "user" not in session:
         return redirect(url_for("login"))
 
